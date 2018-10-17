@@ -16,85 +16,85 @@ type ServerInfo struct {
 	Header uint8
 
 	// Protocol version used by the server.
-	Protocol uint8
+	Protocol uint8 `json:"Protocol"`
 
 	// Name of the server.
-	Name string
+	Name string `json:"Name"`
 
 	// Map the server has currently loaded.
-	Map string
+	Map string `json:"Map"`
 
 	// Name of the folder containing the game files.
-	Folder string
+	Folder string `json:"Folder"`
 
 	// Full name of the game.
-	Game string
+	Game string `json:"Game"`
 
 	// Steam Application ID of game.
-	ID uint16
+	ID uint16 `json:"AppID"`
 
 	// Number of players on the server.
-	Players uint8
+	Players uint8 `json:"Players"`
 
 	// Maximum number of players the server reports it can hold.
-	MaxPlayers uint8
+	MaxPlayers uint8 `json:"MaxPlayers"`
 
 	// Number of bots on the server.
-	Bots uint8
+	Bots uint8 `json:"Bots"`
 
 	// Indicates the type of server
 	// Rag Doll Kung Fu servers always return 0 for "Server type."
-	ServerType ServerType
+	ServerType ServerType `json:"ServerType"`
 
 	// Indicates the operating system of the server
-	ServerOS ServerOS
+	ServerOS ServerOS `json:"ServerOS"`
 
 	// Indicates whether the server requires a password
-	Visibility bool
+	Visibility bool `json:"Visibility"`
 
 	// Specifies whether the server uses VAC
-	VAC bool
+	VAC bool `json:"VAC"`
 
 	// These fields only exist in a response if the server is running The Ship
-	TheShip *TheShipInfo
+	TheShip *TheShipInfo `json:"TheShip,omitempty"`
 
 	// Version of the game installed on the server.
-	Version string
+	Version string `json:"Version"`
 
 	// If present, this specifies which additional data fields will be included.
-	EDF uint8
+	EDF uint8 `json:"EDF,omitempty"`
 
-	ExtendedServerInfo *ExtendedServerInfo
+	ExtendedServerInfo *ExtendedServerInfo `json:"ExtendedServerInfo,omitempty"`
 
-	SourceTV *SourceTVInfo
+	SourceTV *SourceTVInfo `json:"SourceTV,omitempty"`
 }
 
 type TheShipInfo struct {
-	Mode      TheShipMode
-	Witnesses uint8
-	Duration  uint8
+	Mode      TheShipMode `json:"Mode"`
+	Witnesses uint8       `json:"Witnesses"`
+	Duration  uint8       `json:"Duration"`
 }
 
 type ExtendedServerInfo struct {
 	// The server's game port number.
-	Port uint16
+	Port uint16 `json:"Port"`
 
 	// Server's SteamID.
-	SteamID uint64
+	SteamID uint64 `json:"SteamID"`
 
 	// Tags that describe the game according to the server (for future use.)
-	Keywords string
+	Keywords string `json:"Keywords"`
 
 	// The server's 64-bit GameID. If this is present, a more accurate AppID is present in the low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit storage.
-	GameID uint64
+	GameID uint64 `json:"GameID"`
 }
 
 type SourceTVInfo struct {
 	// Spectator port number for SourceTV.
-	Port uint16
+	Port uint16 `json:"Port"`
 
 	// Name of the spectator server for SourceTV.
-	Name string
+	Name string `json:"Name"`
 }
 
 func (c *Client) QueryInfo() (*ServerInfo, error) {
