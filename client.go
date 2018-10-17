@@ -16,6 +16,7 @@ type Client struct {
 	addr    string
 	conn    net.Conn
 	timeout time.Duration
+	buffer  []byte
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
@@ -50,6 +51,26 @@ func NewClient(addr string, options ...func(*Client) error) (c *Client, err erro
 	}
 
 	return c, nil
+}
+
+func (c *Client) Send(data []byte) error {
+	_, err := c.conn.Write(data)
+
+	return err
+}
+
+func (c *Client) Receive() ([]byte, error) {
+	size, err := c.conn.Read(c.buffer[0:MaxPacketSize])
+
+	if err != nil {
+		return nil, err
+	}
+
+	buffer := make([]byte, size)
+
+	copy(buffer, c.buffer[:size])
+
+	return buffer, nil
 }
 
 func (c *Client) Close() error {
