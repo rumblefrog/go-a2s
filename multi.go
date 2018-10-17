@@ -43,7 +43,7 @@ func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, err
 	header.ID = reader.ReadUint32()
 
 	// https://github.com/xPaw/PHP-Source-Query/blob/f713415696d61cdd36639124fa573406360d8219/SourceQuery/BaseSocket.php#L78
-	header.Compressed = (header.ID & 0x80000000) != 0
+	header.Compressed = (header.ID & uint32(0x80000000)) != 0
 
 	header.Total = reader.ReadUint8()
 
