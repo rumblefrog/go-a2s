@@ -50,10 +50,10 @@ type ServerInfo struct {
 	ServerOS ServerOS
 
 	// Indicates whether the server requires a password
-	Visibility Visiblity
+	Visibility bool
 
 	// Specifies whether the server uses VAC
-	VAC VAC
+	VAC bool
 
 	// These fields only exist in a response if the server is running The Ship
 	TheShip *TheShipInfo
@@ -158,9 +158,9 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	info.ServerOS = ParseServerOS(reader.ReadUint8())
 
-	info.Visibility = ParseVisbility(reader.ReadUint8())
+	info.Visibility = reader.ReadUint8() == 1
 
-	info.VAC = ParseVAC(reader.ReadUint8())
+	info.VAC = reader.ReadUint8() == 1
 
 	if AppID(info.ID) == App_TheShip {
 		info.TheShip = &TheShipInfo{}
