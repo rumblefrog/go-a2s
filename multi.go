@@ -1,7 +1,21 @@
 package a2s
 
+import (
+	"bytes"
+	"compress/bzip2"
+	"errors"
+	"hash/crc32"
+)
+
 const (
 	MULTI_PACKET_RESPONSE_HEADER = -2
+)
+
+var (
+	ErrPacketOutOfBound    = errors.New("Packet out of bound")
+	ErrDuplicatePacket     = errors.New("Received same packet of same index")
+	ErrWrongBz2Size        = errors.New("Bad bz2 decompression size")
+	ErrMismatchBz2Checksum = errors.New("Bz2 decompressed checksum mismatches")
 )
 
 type MultiPacketHeader struct {
@@ -58,7 +72,96 @@ func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, err
 
 	header.Size = reader.Pos()
 
+	// Include decompressed size & crc32sum as not all packets have this, so we'll read it later from the start if it's compressed
 	header.Payload = data[header.Size:]
 
 	return header, nil
+}
+
+func (c *Client) CollectMultiplePacketResponse(data []byte) ([]byte, error) {
+	header, err := c.ParseMultiplePacketHeader(data)
+
+	if err != nil {
+		return []byte{}, ErrBadPacketHeader
+	}
+
+	packets := make([]*MultiPacketHeader, header.Total)
+
+	received := 0
+	fullSize := 0
+
+	for {
+		if int(header.Number) >= len(packets) {
+			panic(ErrPacketOutOfBound)
+		}
+
+		if packets[header.Number] != nil {
+			panic(ErrDuplicatePacket)
+		}
+
+		packets[header.Number] = header
+
+		fullSize += len(header.Payload)
+
+		received++
+
+		if received == len(packets) {
+			break
+		}
+
+		data, err := c.Receive()
+
+		if err != nil {
+			return nil, err
+		}
+
+		header, err = c.ParseMultiplePacketHeader(data)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	payload := make([]byte, fullSize)
+
+	cursor := 0
+
+	for _, header := range packets {
+		copy(payload[cursor:cursor+len(header.Payload)], header.Payload)
+		cursor += len(header.Payload)
+	}
+
+	// Includes decompressed size & crc32 sum as that is unread yet, so it's included as part of payload
+	reader := NewPacketReader(payload)
+
+	if packets[0].Compressed {
+		decompressedSize := reader.ReadUint32()
+		checkSum := reader.ReadUint32()
+
+		if decompressedSize > uint32(1024*1024) {
+			return nil, ErrWrongBz2Size
+		}
+
+		decompressed := make([]byte, decompressedSize)
+
+		bz2Reader := bzip2.NewReader(bytes.NewReader(data[reader.Pos():]))
+
+		n, err := bz2Reader.Read(decompressed)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if n != int(decompressedSize) {
+			return nil, ErrWrongBz2Size
+		}
+
+		if crc32.ChecksumIEEE(decompressed) != checkSum {
+			return nil, ErrMismatchBz2Checksum
+		}
+
+		payload = decompressed
+	}
+
+	return payload, nil
 }
