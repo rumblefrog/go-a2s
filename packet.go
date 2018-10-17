@@ -3,10 +3,15 @@ package a2s
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"net"
 )
 
 const MaxPacketSize = 1400
+
+var (
+	ErrOutOfBounds = errors.New("Read out of bounds")
+)
 
 type PacketBuilder struct {
 	bytes.Buffer

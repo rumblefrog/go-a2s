@@ -1,6 +1,7 @@
 package a2s
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -12,11 +13,15 @@ const (
 	DefaultPort    = 27015
 )
 
+var (
+	ErrNilOption = errors.New("Invalid client option")
+)
+
 type Client struct {
 	addr    string
 	conn    net.Conn
 	timeout time.Duration
-	buffer  []byte
+	buffer  [MaxPacketSize]byte
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
