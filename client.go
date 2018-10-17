@@ -18,15 +18,24 @@ var (
 )
 
 type Client struct {
-	addr    string
-	conn    net.Conn
-	timeout time.Duration
-	buffer  [MaxPacketSize]byte
+	addr       string
+	conn       net.Conn
+	timeout    time.Duration
+	buffer     [MaxPacketSize]byte
+	pre_orange bool
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
 	return func(c *Client) error {
 		c.timeout = timeout
+
+		return nil
+	}
+}
+
+func PreOrangeBox(pre bool) func(*Client) error {
+	return func(c *Client) error {
+		c.pre_orange = pre
 
 		return nil
 	}

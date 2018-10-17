@@ -5,6 +5,9 @@ const (
 )
 
 type MultiPacketHeader struct {
+	// Size of the packet header
+	Size int
+
 	// Same as the Goldsource server meaning.
 	// However, if the most significant bit is 1, then the response was compressed with bzip2 before being cut and sent.
 	ID uint32
@@ -22,7 +25,7 @@ type MultiPacketHeader struct {
 		For older engine versions: the maximum and minimum size of the packet was unchangeable.
 		AppIDs which are known not to contain this field: 215, 17550, 17700, and 240 when protocol = 7.
 	*/
-	Size uint16
+	SplitSize uint16
 
 	// Indicates if payload is compressed w/bzip2
 	Compressed bool
@@ -48,4 +51,14 @@ func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, err
 	header.Total = reader.ReadUint8()
 
 	header.Number = reader.ReadUint8()
+
+	if !c.pre_orange {
+		header.SplitSize = reader.ReadUint16()
+	}
+
+	header.Size = reader.Pos()
+
+	header.Payload = data[header.Size:]
+
+	return header, nil
 }
