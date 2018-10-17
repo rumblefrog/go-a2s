@@ -1,11 +1,25 @@
 package a2s
 
 import (
+	"bytes"
 	"encoding/binary"
 	"net"
 )
 
 const MaxPacketSize = 1400
+
+type PacketBuilder struct {
+	bytes.Buffer
+}
+
+func (b *PacketBuilder) WriteCString(s string) {
+	b.WriteString(s)
+	b.WriteByte(0)
+}
+
+func (b *PacketBuilder) WriteBytes(bytes []byte) {
+	b.Write(bytes)
+}
 
 type PacketReader struct {
 	buffer []byte
@@ -96,5 +110,5 @@ func (r *PacketReader) ReadString() string {
 }
 
 func (r *PacketReader) More() bool {
-	return r.pos < len(this.buffer)
+	return r.pos < len(r.buffer)
 }
