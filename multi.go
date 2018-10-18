@@ -92,11 +92,11 @@ func (c *Client) CollectMultiplePacketResponse(data []byte) ([]byte, error) {
 
 	for {
 		if int(header.Number) >= len(packets) {
-			panic(ErrPacketOutOfBound)
+			return nil, ErrPacketOutOfBound
 		}
 
 		if packets[header.Number] != nil {
-			panic(ErrDuplicatePacket)
+			return nil, ErrDuplicatePacket
 		}
 
 		packets[header.Number] = header

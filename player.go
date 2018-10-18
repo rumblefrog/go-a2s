@@ -111,11 +111,11 @@ func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
 	// Simple response now
 
 	if reader.ReadInt32() != -1 {
-		panic(ErrBadPacketHeader)
+		return nil, ErrBadPacketHeader
 	}
 
 	if reader.ReadUint8() != A2S_PLAYER_RESPONSE {
-		panic(ErrBadRulesReply)
+		return nil, ErrBadRulesReply
 	}
 
 	info := &PlayerInfo{}

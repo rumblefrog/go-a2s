@@ -37,7 +37,7 @@ func (c *Client) GetChallenge(header byte, fullResult byte) ([]byte, bool, error
 	case -1:
 		// Continue
 	default:
-		panic(ErrBadPacketHeader)
+		return nil, false, ErrBadPacketHeader
 	}
 
 	switch reader.ReadUint8() {
