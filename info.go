@@ -12,9 +12,6 @@ var (
 )
 
 type ServerInfo struct {
-	// Always equal to 'I' (0x49)
-	Header uint8
-
 	// Protocol version used by the server.
 	Protocol uint8 `json:"Protocol"`
 
@@ -134,9 +131,7 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	info := &ServerInfo{}
 
-	info.Header = reader.ReadUint8()
-
-	if info.Header != A2S_INFO_HEADER {
+	if reader.ReadUint8() != A2S_INFO_HEADER {
 		return nil, ErrUnsupportedHeader
 	}
 

@@ -11,13 +11,10 @@ const (
 )
 
 var (
-	ErrBadRulesReply = errors.New("Bad rules reply")
+	ErrBadPlayerReply = errors.New("Bad player reply")
 )
 
 type PlayerInfo struct {
-	// Always equal to 'D' (0x44)
-	Header uint8
-
 	// Number of players whose information was gathered.
 	Count uint8 `json:"Count"`
 
@@ -91,7 +88,7 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 	// Read header (long 4 bytes)
 	switch int32(binary.LittleEndian.Uint32(data)) {
 	case -1:
-		return c.ParsePlayerInfo(data)
+		return c.parsePlayerInfo(data)
 	case -2:
 		data, err = c.CollectMultiplePacketResponse(data)
 
@@ -99,13 +96,13 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 			return nil, err
 		}
 
-		return c.ParsePlayerInfo(data)
+		return c.parsePlayerInfo(data)
 	}
 
 	return nil, ErrBadPacketHeader
 }
 
-func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
+func (c *Client) parsePlayerInfo(data []byte) (*PlayerInfo, error) {
 	reader := NewPacketReader(data)
 
 	// Simple response now
@@ -115,7 +112,7 @@ func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
 	}
 
 	if reader.ReadUint8() != A2S_PLAYER_RESPONSE {
-		return nil, ErrBadRulesReply
+		return nil, ErrBadPlayerReply
 	}
 
 	info := &PlayerInfo{}
