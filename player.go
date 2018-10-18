@@ -75,6 +75,7 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 	if !immediate {
 		if err := c.Send([]byte{
 			0xff, 0xff, 0xff, 0xff,
+			A2S_PLAYER_REQUEST,
 			data[0], data[1], data[2], data[3],
 		}); err != nil {
 			return nil, err
@@ -142,6 +143,8 @@ func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
 			player.TheShip.Deaths = reader.ReadUint32()
 			player.TheShip.Money = reader.ReadUint32()
 		}
+
+		info.Players = append(info.Players, player)
 	}
 
 	return info, nil

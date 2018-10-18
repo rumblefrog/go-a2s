@@ -1,6 +1,8 @@
 package a2s
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	A2S_PLAYER_CHALLENGE_REPLY_HEADER = 0x41

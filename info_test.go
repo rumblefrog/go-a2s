@@ -6,7 +6,7 @@ import (
 )
 
 func TestInfo(t *testing.T) {
-	c, err := NewClient("74.91.112.77")
+	c, err := NewClient("74.91.116.5:27015")
 
 	if err != nil {
 		fmt.Println(err)
@@ -21,4 +21,13 @@ func TestInfo(t *testing.T) {
 	}
 
 	fmt.Printf("%v", i)
+
+	s, err := c.QueryPlayer()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%v", s.Players)
 }
