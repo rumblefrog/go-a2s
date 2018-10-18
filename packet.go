@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math"
 	"net"
 )
 
@@ -100,6 +101,24 @@ func (r *PacketReader) ReadUint64() uint64 {
 	u64 := binary.LittleEndian.Uint64(r.buffer[r.pos:])
 	r.pos += 8
 	return u64
+}
+
+func (r *PacketReader) ReadFloat32() float32 {
+	bits := r.ReadUint32()
+
+	return math.Float32frombits(bits)
+}
+
+func (r *PacketReader) TryReadString() (string, bool) {
+	start := r.pos
+	for r.pos < len(r.buffer) {
+		if r.buffer[r.pos] == 0 {
+			r.pos++
+			return string(r.buffer[start : r.pos-1]), true
+		}
+		r.pos++
+	}
+	return "", false
 }
 
 func (r *PacketReader) ReadString() string {

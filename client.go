@@ -23,6 +23,7 @@ type Client struct {
 	timeout    time.Duration
 	buffer     [MaxPacketSize]byte
 	pre_orange bool
+	appid      AppID
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
@@ -36,6 +37,14 @@ func TimeoutOption(timeout time.Duration) func(*Client) error {
 func PreOrangeBox(pre bool) func(*Client) error {
 	return func(c *Client) error {
 		c.pre_orange = pre
+
+		return nil
+	}
+}
+
+func SetAppID(appid int32) func(*Client) error {
+	return func(c *Client) error {
+		c.appid = AppID(appid)
 
 		return nil
 	}

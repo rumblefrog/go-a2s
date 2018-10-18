@@ -1,7 +1,17 @@
 package a2s
 
+import (
+	"encoding/binary"
+	"errors"
+)
+
 const (
-	A2S_PLAYER_HEADER = 0x44 // Source & up
+	A2S_PLAYER_REQUEST  = 0x55
+	A2S_PLAYER_RESPONSE = 0x44 // Source & up
+)
+
+var (
+	ErrBadRulesReply = errors.New("Bad rules reply")
 )
 
 type PlayerInfo struct {
@@ -9,7 +19,10 @@ type PlayerInfo struct {
 	Header uint8
 
 	// Number of players whose information was gathered.
-	Players uint8 `json:"Players"`
+	Count uint8 `json:"Count"`
+
+	// Slice of pointers to each Player
+	Players []*Player `json:"Players"`
 }
 
 type Player struct {
@@ -37,6 +50,94 @@ type TheShipPlayer struct {
 	Money uint32 `json:"Money"`
 }
 
-func (c *Client) QueryPlayer() {
+func (c *Client) QueryPlayer() (*PlayerInfo, error) {
+	/*
+		A2S_PLAYER
 
+		Request Format
+
+		Header	byte	'U' (0x55)
+		Challenge	int	Challenge number, or -1 (0xFFFFFFFF) to receive a challenge number.
+
+		FF FF FF FF 55 FF FF FF FF                         ÿÿÿÿUÿÿÿÿ"
+
+		Example A2S_PLAYER request with the received challenge number:
+
+		FF FF FF FF 55 4B A1 D5 22                         ÿÿÿÿUÿÿÿÿ"
+	*/
+
+	data, immediate, err := c.GetChallenge(A2S_PLAYER_REQUEST, A2S_PLAYER_RESPONSE)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !immediate {
+		if err := c.Send([]byte{
+			0xff, 0xff, 0xff, 0xff,
+			data[0], data[1], data[2], data[3],
+		}); err != nil {
+			return nil, err
+		}
+
+		data, err = c.Receive()
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Read header (long 4 bytes)
+	switch int32(binary.LittleEndian.Uint32(data)) {
+	case -1:
+		return c.ParsePlayerInfo(data)
+	case -2:
+		data, err = c.CollectMultiplePacketResponse(data)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return c.ParsePlayerInfo(data)
+	}
+
+	return nil, ErrBadPacketHeader
+}
+
+func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
+	reader := NewPacketReader(data)
+
+	// Simple response now
+
+	if reader.ReadInt32() != -1 {
+		panic(ErrBadPacketHeader)
+	}
+
+	if reader.ReadUint8() != A2S_PLAYER_RESPONSE {
+		panic(ErrBadRulesReply)
+	}
+
+	info := &PlayerInfo{}
+
+	info.Count = reader.ReadUint8()
+
+	var player *Player
+
+	for i := 0; i < int(info.Count); i++ {
+		player = &Player{}
+
+		player.Index = reader.ReadUint8()
+		player.Name = reader.ReadString()
+		player.Score = reader.ReadUint32()
+		player.Duration = reader.ReadFloat32()
+
+		if c.appid == App_TheShip {
+			player.TheShip = &TheShipPlayer{}
+
+			player.TheShip.Deaths = reader.ReadUint32()
+			player.TheShip.Money = reader.ReadUint32()
+		}
+	}
+
+	return info, nil
 }
