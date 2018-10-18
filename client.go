@@ -18,14 +18,14 @@ var (
 )
 
 type Client struct {
-	addr       string
-	conn       net.Conn
-	timeout    time.Duration
-	buffer     [MaxPacketSize]byte
-	pre_orange bool
-	appid      AppID
-	wait       time.Duration
-	next       time.Time
+	addr      string
+	conn      net.Conn
+	timeout   time.Duration
+	buffer    [MaxPacketSize]byte
+	preOrange bool
+	appid     AppID
+	wait      time.Duration
+	next      time.Time
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
@@ -38,7 +38,7 @@ func TimeoutOption(timeout time.Duration) func(*Client) error {
 
 func PreOrangeBox(pre bool) func(*Client) error {
 	return func(c *Client) error {
-		c.pre_orange = pre
+		c.preOrange = pre
 
 		return nil
 	}
@@ -78,7 +78,7 @@ func NewClient(addr string, options ...func(*Client) error) (c *Client, err erro
 	return c, nil
 }
 
-func (c *Client) Send(data []byte) error {
+func (c *Client) send(data []byte) error {
 	c.enforceRateLimit()
 
 	defer c.setNextQueryTime()
@@ -92,7 +92,7 @@ func (c *Client) Send(data []byte) error {
 	return err
 }
 
-func (c *Client) Receive() ([]byte, error) {
+func (c *Client) receive() ([]byte, error) {
 	defer c.setNextQueryTime()
 
 	if c.timeout > 0 {

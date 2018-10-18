@@ -108,11 +108,11 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	builder.WriteCString("Source Engine Query")
 
-	if err := c.Send(builder.Bytes()); err != nil {
+	if err := c.send(builder.Bytes()); err != nil {
 		return nil, err
 	}
 
-	data, err := c.Receive()
+	data, err := c.receive()
 
 	if err != nil {
 		return nil, err

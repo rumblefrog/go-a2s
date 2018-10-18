@@ -63,14 +63,14 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 		FF FF FF FF 55 4B A1 D5 22                         ÿÿÿÿUÿÿÿÿ"
 	*/
 
-	data, immediate, err := c.GetChallenge(A2S_PLAYER_REQUEST, A2S_PLAYER_RESPONSE)
+	data, immediate, err := c.getChallenge(A2S_PLAYER_REQUEST, A2S_PLAYER_RESPONSE)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if !immediate {
-		if err := c.Send([]byte{
+		if err := c.send([]byte{
 			0xff, 0xff, 0xff, 0xff,
 			A2S_PLAYER_REQUEST,
 			data[0], data[1], data[2], data[3],
@@ -78,7 +78,7 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 			return nil, err
 		}
 
-		data, err = c.Receive()
+		data, err = c.receive()
 
 		if err != nil {
 			return nil, err
@@ -90,7 +90,7 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 	case -1:
 		return c.parsePlayerInfo(data)
 	case -2:
-		data, err = c.CollectMultiplePacketResponse(data)
+		data, err = c.collectMultiplePacketResponse(data)
 
 		if err != nil {
 			return nil, err

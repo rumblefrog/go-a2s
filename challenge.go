@@ -12,8 +12,8 @@ var (
 	ErrBadChallengeResponse = errors.New("Bad challenge response")
 )
 
-func (c *Client) GetChallenge(header byte, fullResult byte) ([]byte, bool, error) {
-	if err := c.Send([]byte{
+func (c *Client) getChallenge(header byte, fullResult byte) ([]byte, bool, error) {
+	if err := c.send([]byte{
 		0xff, 0xff, 0xff, 0xff,
 		header,
 		0xff, 0xff, 0xff, 0xff,
@@ -21,7 +21,7 @@ func (c *Client) GetChallenge(header byte, fullResult byte) ([]byte, bool, error
 		return nil, false, err
 	}
 
-	data, err := c.Receive()
+	data, err := c.receive()
 
 	if err != nil {
 		return nil, false, err

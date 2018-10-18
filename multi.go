@@ -48,7 +48,7 @@ type MultiPacketHeader struct {
 	Payload []byte
 }
 
-func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, error) {
+func (c *Client) parseMultiplePacketHeader(data []byte) (*MultiPacketHeader, error) {
 	reader := NewPacketReader(data)
 
 	if reader.ReadInt32() != -2 {
@@ -66,7 +66,7 @@ func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, err
 
 	header.Number = reader.ReadUint8()
 
-	if !c.pre_orange {
+	if !c.preOrange {
 		header.SplitSize = reader.ReadUint16()
 	}
 
@@ -78,8 +78,8 @@ func (c *Client) ParseMultiplePacketHeader(data []byte) (*MultiPacketHeader, err
 	return header, nil
 }
 
-func (c *Client) CollectMultiplePacketResponse(data []byte) ([]byte, error) {
-	header, err := c.ParseMultiplePacketHeader(data)
+func (c *Client) collectMultiplePacketResponse(data []byte) ([]byte, error) {
+	header, err := c.parseMultiplePacketHeader(data)
 
 	if err != nil {
 		return []byte{}, ErrBadPacketHeader
@@ -109,13 +109,13 @@ func (c *Client) CollectMultiplePacketResponse(data []byte) ([]byte, error) {
 			break
 		}
 
-		data, err := c.Receive()
+		data, err := c.receive()
 
 		if err != nil {
 			return nil, err
 		}
 
-		header, err = c.ParseMultiplePacketHeader(data)
+		header, err = c.parseMultiplePacketHeader(data)
 
 		if err != nil {
 			return nil, err
