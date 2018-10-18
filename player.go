@@ -32,7 +32,7 @@ type Player struct {
 	// Name of the player.
 	Name string `json:"Name"`
 
-	// 	Player's score (usually "frags" or "kills".)
+	// Player's score (usually "frags" or "kills".)
 	Score uint32 `json:"Score"`
 
 	// Time (in seconds) player has been connected to the server.
@@ -135,7 +135,7 @@ func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
 		/*
 			The Ship additional player info
 
-			Only when if client AppID is set to 2400
+			Only if client AppID is set to 2400
 		*/
 		if c.appid == App_TheShip {
 			player.TheShip = &TheShipPlayer{}
