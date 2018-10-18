@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultTimeout = time.Second * 10
+	DefaultTimeout = time.Second * 3
 	DefaultPort    = 27015
 )
 
@@ -24,6 +24,8 @@ type Client struct {
 	buffer     [MaxPacketSize]byte
 	pre_orange bool
 	appid      AppID
+	wait       time.Duration
+	next       time.Time
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
@@ -77,12 +79,26 @@ func NewClient(addr string, options ...func(*Client) error) (c *Client, err erro
 }
 
 func (c *Client) Send(data []byte) error {
+	c.enforceRateLimit()
+
+	defer c.setNextQueryTime()
+
+	if c.timeout > 0 {
+		c.conn.SetWriteDeadline(c.extendedDeadline())
+	}
+
 	_, err := c.conn.Write(data)
 
 	return err
 }
 
 func (c *Client) Receive() ([]byte, error) {
+	defer c.setNextQueryTime()
+
+	if c.timeout > 0 {
+		c.conn.SetReadDeadline(c.extendedDeadline())
+	}
+
 	size, err := c.conn.Read(c.buffer[0:MaxPacketSize])
 
 	if err != nil {
@@ -98,4 +114,25 @@ func (c *Client) Receive() ([]byte, error) {
 
 func (c *Client) Close() error {
 	return c.conn.Close()
+}
+
+func (c *Client) extendedDeadline() time.Time {
+	return time.Now().Add(c.timeout)
+}
+
+func (c *Client) setNextQueryTime() {
+	if c.wait != 0 {
+		c.next = time.Now().Add(c.wait)
+	}
+}
+
+func (c *Client) enforceRateLimit() {
+	if c.wait == 0 {
+		return
+	}
+
+	wait := c.next.Sub(time.Now())
+	if wait > 0 {
+		time.Sleep(wait)
+	}
 }

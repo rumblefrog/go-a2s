@@ -131,6 +131,11 @@ func (c *Client) ParsePlayerInfo(data []byte) (*PlayerInfo, error) {
 		player.Score = reader.ReadUint32()
 		player.Duration = reader.ReadFloat32()
 
+		/*
+			The Ship additional player info
+
+			Only when if client AppID is set to 2400
+		*/
 		if c.appid == App_TheShip {
 			player.TheShip = &TheShipPlayer{}
 
