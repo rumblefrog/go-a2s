@@ -6,11 +6,7 @@ import (
 	"testing"
 )
 
-const (
-	TestHost = "s1.zhenyangli.me"
-)
-
-func TestInfo(t *testing.T) {
+func TestRules(t *testing.T) {
 	c, err := NewClient(TestHost)
 
 	defer c.Close()
@@ -20,14 +16,14 @@ func TestInfo(t *testing.T) {
 		return
 	}
 
-	i, err := c.QueryInfo()
+	r, err := c.QueryRules()
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	JSON, _ := json.Marshal(i)
+	JSON, _ := json.Marshal(r)
 
 	fmt.Println(string(JSON))
 }

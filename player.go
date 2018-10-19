@@ -23,7 +23,10 @@ type PlayerInfo struct {
 }
 
 type Player struct {
-	// Index of player chunk starting from 0.
+	/*
+		Index of player chunk starting from 0.
+		This seems to be always 0?
+	*/
 	Index uint8 `json:"Index"`
 
 	// Name of the player.
