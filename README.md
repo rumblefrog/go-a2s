@@ -49,7 +49,7 @@ func main() {
     client := a2s.NewClient(
         "ServerIP:Port",
         a2s.TimeoutOption(time.Second * 5), // Setting timeout option. Default is 3 seconds
-        //... Other options
+        // ... Other options
     )
 
     defer client.Close()

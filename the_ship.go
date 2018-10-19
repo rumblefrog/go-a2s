@@ -39,3 +39,22 @@ func ParseTheShipMode(m uint8) TheShipMode {
 
 	return TheShipMode_Unknown
 }
+
+func (m TheShipMode) String() string {
+	switch m {
+	case TheShipMode_Hunt:
+		return "Hunt"
+	case TheShipMode_Elimination:
+		return "Elimination"
+	case TheShipMode_Duel:
+		return "Duel"
+	case TheShipMode_Deathmatch:
+		return "Deathmatch"
+	case TheShipMode_VIP_Team:
+		return "VIP Team"
+	case TheShipMode_Team_Elimination:
+		return "Team Elimination"
+	default:
+		return "Unknown"
+	}
+}

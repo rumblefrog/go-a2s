@@ -21,3 +21,16 @@ func ParseServerType(servertype uint8) ServerType {
 
 	return ServerType_Unknown
 }
+
+func (t ServerType) String() string {
+	switch t {
+	case ServerType_Dedicated:
+		return "Dedicated"
+	case ServerType_NonDedicated:
+		return "Non-Dedicated"
+	case ServerType_SourceTV:
+		return "SourceTV"
+	default:
+		return "Unknown"
+	}
+}

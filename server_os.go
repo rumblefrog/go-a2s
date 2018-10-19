@@ -21,3 +21,16 @@ func ParseServerOS(env uint8) ServerOS {
 
 	return ServerOS_Unknown
 }
+
+func (os ServerOS) String() string {
+	switch os {
+	case ServerOS_Linux:
+		return "Linux"
+	case ServerOS_Windows:
+		return "Windows"
+	case ServerOS_Mac:
+		return "Mac"
+	default:
+		return "Unknown"
+	}
+}
