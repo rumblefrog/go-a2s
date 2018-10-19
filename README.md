@@ -12,6 +12,12 @@ Godoc is available here: https://godoc.org/github.com/rumblefrog/go-a2s
 
 ## Guides
 
+### Installing
+
+```bash
+go get -u github.com/rumblefrog/go-a2s
+```
+
 ### Querying
 
 ```go
