@@ -8,6 +8,8 @@ import (
 	"net"
 )
 
+// Note that some games such as squad may use a non-standard packet size
+// Refer to the game documentation to see if this needs to be changed
 const MaxPacketSize = 1400
 
 var (
