@@ -28,7 +28,11 @@ import (
 )
 
 func main() {
-    client := a2s.NewClient("ServerIP:Port")
+    client, err := a2s.NewClient("ServerIP:Port")
+
+    if err != nil {
+        // Handle error
+    }
 
     defer client.Close()
 
@@ -52,11 +56,15 @@ import (
 )
 
 func main() {
-    client := a2s.NewClient(
+    client, err := a2s.NewClient(
         "ServerIP:Port",
         a2s.TimeoutOption(time.Second * 5), // Setting timeout option. Default is 3 seconds
         // ... Other options
     )
+
+    if err != nil {
+        // Handle error
+    }
 
     defer client.Close()
 
