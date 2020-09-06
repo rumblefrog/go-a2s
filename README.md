@@ -24,7 +24,7 @@ go get -u github.com/rumblefrog/go-a2s
 package main
 
 import (
-    a2s "https://github.com/rumblefrog/go-a2s"
+    a2s "github.com/rumblefrog/go-a2s"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 package main
 
 import (
-    a2s "https://github.com/rumblefrog/go-a2s"
+    a2s "github.com/rumblefrog/go-a2s"
 )
 
 func main() {
