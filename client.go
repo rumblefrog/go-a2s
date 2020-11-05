@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	DefaultTimeout = time.Second * 3
-	DefaultPort    = 27015
+	DefaultTimeout       = time.Second * 3
+	DefaultPort          = 27015
+	DefaultMaxPacketSize = 1400
 )
 
 var (
@@ -18,14 +19,15 @@ var (
 )
 
 type Client struct {
-	addr      string
-	conn      net.Conn
-	timeout   time.Duration
-	buffer    [MaxPacketSize]byte
-	preOrange bool
-	appid     AppID
-	wait      time.Duration
-	next      time.Time
+	addr          string
+	conn          net.Conn
+	timeout       time.Duration
+	maxPacketSize uint32
+	buffer        []byte
+	preOrange     bool
+	appid         AppID
+	wait          time.Duration
+	next          time.Time
 }
 
 func TimeoutOption(timeout time.Duration) func(*Client) error {
@@ -52,10 +54,22 @@ func SetAppID(appid int32) func(*Client) error {
 	}
 }
 
+// SetMaxPacketSize changes the maximum buffer size of a UDP packet
+// Note that some games such as squad may use a non-standard packet size
+// Refer to the game documentation to see if this needs to be changed
+func SetMaxPacketSize(size uint32) func(*Client) error {
+	return func(c *Client) error {
+		c.maxPacketSize = size
+
+		return nil
+	}
+}
+
 func NewClient(addr string, options ...func(*Client) error) (c *Client, err error) {
 	c = &Client{
-		timeout: DefaultTimeout,
-		addr:    addr,
+		timeout:       DefaultTimeout,
+		addr:          addr,
+		maxPacketSize: DefaultMaxPacketSize,
 	}
 
 	for _, f := range options {
@@ -74,6 +88,8 @@ func NewClient(addr string, options ...func(*Client) error) (c *Client, err erro
 	if c.conn, err = net.DialTimeout("udp", c.addr, c.timeout); err != nil {
 		return nil, err
 	}
+
+	c.buffer = make([]byte, 0, c.maxPacketSize)
 
 	return c, nil
 }
@@ -99,7 +115,7 @@ func (c *Client) receive() ([]byte, error) {
 		c.conn.SetReadDeadline(c.extendedDeadline())
 	}
 
-	size, err := c.conn.Read(c.buffer[0:MaxPacketSize])
+	size, err := c.conn.Read(c.buffer[0:c.maxPacketSize])
 
 	if err != nil {
 		return nil, err

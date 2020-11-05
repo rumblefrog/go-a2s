@@ -58,6 +58,7 @@ import (
 func main() {
     client, err := a2s.NewClient(
         "ServerIP:Port",
+        a2s.SetMaxPacketSize(14000), // Some engine does not follow the protocol spec, and may require bigger packet buffer
         a2s.TimeoutOption(time.Second * 5), // Setting timeout option. Default is 3 seconds
         // ... Other options
     )
