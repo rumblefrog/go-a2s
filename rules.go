@@ -43,7 +43,8 @@ func (c *Client) QueryRules() (*RulesInfo, error) {
 		FF FF FF FF 56 4B A1 D5 22                         ÿÿÿÿVK¡Õ"
 	*/
 
-	data, immediate, err := c.getChallenge(A2S_RULES_REQUEST, A2S_RULES_RESPONSE)
+	ruleRequest := []byte{0xFF, 0xFF, 0xFF, 0xFF, A2S_RULES_REQUEST, 0xFF, 0xFF, 0xFF, 0xFF}
+	data, immediate, err := c.getChallenge(ruleRequest, A2S_RULES_RESPONSE)
 
 	if err != nil {
 		return nil, err
