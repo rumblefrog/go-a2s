@@ -2,7 +2,6 @@ package a2s
 
 import (
 	"errors"
-	"fmt"
 )
 
 const (
@@ -146,7 +145,6 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	header := reader.ReadUint8()
 	if header != A2S_INFO_RESPONSE {
-		fmt.Println(4, header)
 		return nil, ErrUnsupportedHeader
 	}
 
