@@ -66,7 +66,8 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 		FF FF FF FF 55 4B A1 D5 22                         ÿÿÿÿUÿÿÿÿ"
 	*/
 
-	data, immediate, err := c.getChallenge(A2S_PLAYER_REQUEST, A2S_PLAYER_RESPONSE)
+	playerRequest := []byte{0xFF, 0xFF, 0xFF, 0xFF, A2S_PLAYER_REQUEST, 0xFF, 0xFF, 0xFF, 0xFF}
+	data, immediate, err := c.getChallenge(playerRequest, A2S_PLAYER_RESPONSE)
 
 	if err != nil {
 		return nil, err

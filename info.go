@@ -1,9 +1,12 @@
 package a2s
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
-	A2S_INFO_HEADER = 0x49 // Source & up
+	A2S_INFO_REQUEST  = 0x54
+	A2S_INFO_RESPONSE = 0x49 // Source & up
 )
 
 var (
@@ -103,19 +106,28 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	*/
 	builder.WriteBytes([]byte{
-		0xff, 0xff, 0xff, 0xff, 0x54,
+		0xFF, 0xFF, 0xFF, 0xFF, A2S_INFO_REQUEST,
 	})
 
 	builder.WriteCString("Source Engine Query")
 
-	if err := c.send(builder.Bytes()); err != nil {
-		return nil, err
-	}
-
-	data, err := c.receive()
+	data, immediate, err := c.getChallenge(builder.Bytes(), A2S_INFO_RESPONSE)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if !immediate {
+		builder.WriteBytes(data)
+		if err := c.send(builder.Bytes()); err != nil {
+			return nil, err
+		}
+
+		data, err = c.receive()
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	/*
@@ -131,7 +143,8 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 	info := &ServerInfo{}
 
-	if reader.ReadUint8() != A2S_INFO_HEADER {
+	header := reader.ReadUint8()
+	if header != A2S_INFO_RESPONSE {
 		return nil, ErrUnsupportedHeader
 	}
 

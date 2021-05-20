@@ -12,12 +12,8 @@ var (
 	ErrBadChallengeResponse = errors.New("Bad challenge response")
 )
 
-func (c *Client) getChallenge(header byte, fullResult byte) ([]byte, bool, error) {
-	if err := c.send([]byte{
-		0xff, 0xff, 0xff, 0xff,
-		header,
-		0xff, 0xff, 0xff, 0xff,
-	}); err != nil {
+func (c *Client) getChallenge(header []byte, fullResult byte) ([]byte, bool, error) {
+	if err := c.send(header); err != nil {
 		return nil, false, err
 	}
 
@@ -32,7 +28,6 @@ func (c *Client) getChallenge(header byte, fullResult byte) ([]byte, bool, error
 	switch int32(reader.ReadUint32()) {
 	case -2:
 		// We received an unexpected full reply
-
 		return data, true, nil
 	case -1:
 		// Continue
