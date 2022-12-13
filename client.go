@@ -20,6 +20,7 @@ var (
 
 type Client struct {
 	addr          string
+	shouldConnect bool
 	conn          net.Conn
 	timeout       time.Duration
 	maxPacketSize uint32
@@ -54,6 +55,14 @@ func SetAppID(appid int32) func(*Client) error {
 	}
 }
 
+// disableDial can disable dialing the given address on client creation to prevent UDP floods in unit tests.
+func disableDial() func(*Client) error {
+	return func(c *Client) error {
+		c.shouldConnect = false
+		return nil
+	}
+}
+
 // SetMaxPacketSize changes the maximum buffer size of a UDP packet
 // Note that some games such as squad may use a non-standard packet size
 // Refer to the game documentation to see if this needs to be changed
@@ -68,6 +77,7 @@ func SetMaxPacketSize(size uint32) func(*Client) error {
 func NewClient(addr string, options ...func(*Client) error) (c *Client, err error) {
 	c = &Client{
 		timeout:       DefaultTimeout,
+		shouldConnect: true,
 		addr:          addr,
 		maxPacketSize: DefaultMaxPacketSize,
 	}
@@ -85,8 +95,10 @@ func NewClient(addr string, options ...func(*Client) error) (c *Client, err erro
 		c.addr = fmt.Sprintf("%s:%d", c.addr, DefaultPort)
 	}
 
-	if c.conn, err = net.DialTimeout("udp", c.addr, c.timeout); err != nil {
-		return nil, err
+	if c.shouldConnect {
+		if c.conn, err = net.DialTimeout("udp", c.addr, c.timeout); err != nil {
+			return nil, err
+		}
 	}
 
 	c.buffer = make([]byte, 0, c.maxPacketSize)
@@ -129,6 +141,9 @@ func (c *Client) receive() ([]byte, error) {
 }
 
 func (c *Client) Close() error {
+	if !c.shouldConnect {
+		return nil
+	}
 	return c.conn.Close()
 }
 

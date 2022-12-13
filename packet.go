@@ -79,6 +79,13 @@ func (r *PacketReader) ReadUint8() uint8 {
 	return b
 }
 
+func (r *PacketReader) TryReadUint8() (uint8, bool) {
+	if r.CanRead(1) != nil {
+		return 0, false
+	}
+	return r.ReadUint8(), true
+}
+
 func (r *PacketReader) ReadUint16() uint16 {
 	u16 := binary.LittleEndian.Uint16(r.buffer[r.pos:])
 	r.pos += 2
@@ -91,8 +98,22 @@ func (r *PacketReader) ReadUint32() uint32 {
 	return u32
 }
 
+func (r *PacketReader) TryReadUint32() (uint32, bool) {
+	if r.CanRead(4) != nil {
+		return 0, false
+	}
+	return r.ReadUint32(), true
+}
+
 func (r *PacketReader) ReadInt32() int32 {
 	return int32(r.ReadUint32())
+}
+
+func (r *PacketReader) TryReadInt32() (int32, bool) {
+	if r.CanRead(4) != nil {
+		return 0, false
+	}
+	return r.ReadInt32(), true
 }
 
 func (r *PacketReader) ReadUint64() uint64 {
@@ -105,6 +126,13 @@ func (r *PacketReader) ReadFloat32() float32 {
 	bits := r.ReadUint32()
 
 	return math.Float32frombits(bits)
+}
+
+func (r *PacketReader) TryReadFloat32() (float32, bool) {
+	if r.CanRead(4) != nil {
+		return 0, false
+	}
+	return r.ReadFloat32(), true
 }
 
 func (r *PacketReader) TryReadString() (string, bool) {
