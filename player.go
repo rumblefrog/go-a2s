@@ -110,28 +110,50 @@ func (c *Client) parsePlayerInfo(data []byte) (*PlayerInfo, error) {
 	reader := NewPacketReader(data)
 
 	// Simple response now
-
-	if reader.ReadInt32() != -1 {
-		return nil, ErrBadPacketHeader
+	_, ok := reader.TryReadInt32()
+	if !ok {
+		return nil, ErrBadPlayerReply
 	}
 
-	if reader.ReadUint8() != A2S_PLAYER_RESPONSE {
+	headerByte, ok := reader.TryReadUint8()
+	if !ok || headerByte != A2S_PLAYER_RESPONSE {
 		return nil, ErrBadPlayerReply
 	}
 
 	info := &PlayerInfo{}
 
-	info.Count = reader.ReadUint8()
+	count, hasCount := reader.TryReadUint8()
+	if !hasCount {
+		return nil, ErrBadPlayerReply
+	}
+
+	info.Count = count
 
 	var player *Player
 
 	for i := 0; i < int(info.Count); i++ {
 		player = &Player{}
 
-		player.Index = reader.ReadUint8()
-		player.Name = reader.ReadString()
-		player.Score = reader.ReadUint32()
-		player.Duration = reader.ReadFloat32()
+		index, hasIndex := reader.TryReadUint8()
+		if !hasIndex {
+			return nil, ErrBadPlayerReply
+		}
+		player.Index = index
+		name, hasName := reader.TryReadString()
+		if !hasName {
+			return nil, ErrBadPlayerReply
+		}
+		player.Name = name
+		score, hasScore := reader.TryReadUint32()
+		if !hasScore {
+			return nil, ErrBadPlayerReply
+		}
+		player.Score = score
+		duration, hasDuration := reader.TryReadFloat32()
+		if !hasDuration {
+			return nil, ErrBadPlayerReply
+		}
+		player.Duration = duration
 
 		/*
 			The Ship additional player info
@@ -141,8 +163,17 @@ func (c *Client) parsePlayerInfo(data []byte) (*PlayerInfo, error) {
 		if c.appid == App_TheShip {
 			player.TheShip = &TheShipPlayer{}
 
-			player.TheShip.Deaths = reader.ReadUint32()
-			player.TheShip.Money = reader.ReadUint32()
+			shipDeaths, hasShipDeaths := reader.TryReadUint32()
+			if !hasShipDeaths {
+				return nil, ErrBadPlayerReply
+			}
+			player.TheShip.Deaths = shipDeaths
+
+			shipMoney, hasShipMoney := reader.TryReadUint32()
+			if !hasShipMoney {
+				return nil, ErrBadPlayerReply
+			}
+			player.TheShip.Money = shipMoney
 		}
 
 		info.Players = append(info.Players, player)

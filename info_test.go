@@ -2,23 +2,20 @@ package a2s
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"testing"
 )
 
-const (
-	TestHost = "s1.zhenyangli.me"
-)
+var testHost = flag.String("test-host", "s1.zhenyangli.me", "Remote hostname to use for unit tests.")
 
 func TestInfo(t *testing.T) {
-	c, err := NewClient(TestHost)
-
-	defer c.Close()
-
+	c, err := NewClient(*testHost)
 	if err != nil {
 		t.Error(err)
 		return
 	}
+	defer c.Close()
 
 	i, err := c.QueryInfo()
 

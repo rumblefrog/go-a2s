@@ -7,7 +7,7 @@ import (
 )
 
 func TestRules(t *testing.T) {
-	c, err := NewClient(TestHost)
+	c, err := NewClient(*testHost)
 
 	defer c.Close()
 
