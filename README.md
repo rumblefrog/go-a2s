@@ -1,6 +1,7 @@
 ## Go A2S
 
-[![Build Status](https://travis-ci.com/rumblefrog/go-a2s.svg?branch=master)](https://travis-ci.com/rumblefrog/go-a2s)
+> As the underlying A2S protocol seldoms ever have changes, this library will not have any changes either, rather than an indication of unmaintained.
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/rumblefrog/go-a2s)](https://goreportcard.com/report/github.com/rumblefrog/go-a2s)
 [![GoDoc](https://godoc.org/github.com/rumblefrog/go-a2s?status.svg)](https://godoc.org/github.com/rumblefrog/go-a2s)
 
