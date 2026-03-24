@@ -32,7 +32,7 @@ func TestPlayer(t *testing.T) {
 func validPlayerInfoPacket() []byte {
 	return []byte{
 		0xFF, 0xFF, 0xFF, 0xFF, 0x44, 0x02, 0x01, 0x5B, 0x44, 0x5D, 0x2D, 0x2D, 0x2D, 0x2D, 0x3E, 0x54,
-		0x2E, 0x4E, 0x2E, 0x57, 0x3C, 0x2D, 0x2D, 0x2D, 0x2D, 0x00, 0x0E, 0x00, 0x00, 0x00, 0xB4, 0x97,
+		0x2E, 0x4E, 0x2E, 0x57, 0x3C, 0x2D, 0x2D, 0x2D, 0x2D, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xB4, 0x97,
 		0x00, 0x44, 0x02, 0x4B, 0x69, 0x6C, 0x6C, 0x65, 0x72, 0x20, 0x21, 0x21, 0x21, 0x00, 0x05, 0x00,
 		0x00, 0x00, 0x69, 0x24, 0xD9, 0x43,
 	}
@@ -50,11 +50,11 @@ func TestParsePlayerInfo(t *testing.T) {
 	assert.Equal(t, uint8(1), info.Players[0].Index, "Player index should match")
 	assert.Equal(t, "[D]---->T.N.W<----", info.Players[0].Name, "Player name should match")
 	assert.Equal(t, float32(514.37036), info.Players[0].Duration, "Player duration should match")
-	assert.Equal(t, uint32(14), info.Players[0].Score, "Player score should match")
+	assert.Equal(t, int32(-1), info.Players[0].Score, "Player score should match")
 	assert.Equal(t, uint8(2), info.Players[1].Index, "Player index should match")
 	assert.Equal(t, "Killer !!!", info.Players[1].Name, "Player name should match")
 	assert.Equal(t, float32(434.28445), info.Players[1].Duration, "Player duration should match")
-	assert.Equal(t, uint32(5), info.Players[1].Score, "Player score should match")
+	assert.Equal(t, int32(5), info.Players[1].Score, "Player score should match")
 }
 
 func FuzzParsePlayerInfo(f *testing.F) {

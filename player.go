@@ -33,7 +33,7 @@ type Player struct {
 	Name string `json:"Name"`
 
 	// Player's score (usually "frags" or "kills".)
-	Score uint32 `json:"Score"`
+	Score int32 `json:"Score"`
 
 	// Time (in seconds) player has been connected to the server.
 	Duration float32 `json:"Duration"`
@@ -144,7 +144,7 @@ func (c *Client) parsePlayerInfo(data []byte) (*PlayerInfo, error) {
 			return nil, ErrBadPlayerReply
 		}
 		player.Name = name
-		score, hasScore := reader.TryReadUint32()
+		score, hasScore := reader.TryReadInt32()
 		if !hasScore {
 			return nil, ErrBadPlayerReply
 		}
