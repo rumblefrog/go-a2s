@@ -123,7 +123,9 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 			return nil, err
 		}
 
-		data, err = c.receive()
+		data, err = c.receiveMatching(func(data []byte) bool {
+			return isReply(data, true, A2S_INFO_RESPONSE, A2S_PLAYER_CHALLENGE_REPLY_HEADER)
+		})
 
 		if err != nil {
 			return nil, err
