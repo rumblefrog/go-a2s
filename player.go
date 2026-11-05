@@ -74,15 +74,13 @@ func (c *Client) QueryPlayer() (*PlayerInfo, error) {
 	}
 
 	if !immediate {
-		if err := c.send([]byte{
-			0xff, 0xff, 0xff, 0xff,
-			A2S_PLAYER_REQUEST,
-			data[0], data[1], data[2], data[3],
-		}); err != nil {
-			return nil, err
-		}
-
-		data, err = c.receive()
+		data, err = c.requestWithChallenge(func(challenge []byte) []byte {
+			return []byte{
+				0xff, 0xff, 0xff, 0xff,
+				A2S_PLAYER_REQUEST,
+				challenge[0], challenge[1], challenge[2], challenge[3],
+			}
+		}, data)
 
 		if err != nil {
 			return nil, err

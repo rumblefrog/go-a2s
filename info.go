@@ -118,12 +118,11 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 	}
 
 	if !immediate {
-		builder.WriteBytes(data)
-		if err := c.send(builder.Bytes()); err != nil {
-			return nil, err
-		}
+		query := builder.Bytes()
 
-		data, err = c.receive()
+		data, err = c.requestWithChallenge(func(challenge []byte) []byte {
+			return append(append([]byte{}, query...), challenge...)
+		}, data)
 
 		if err != nil {
 			return nil, err
