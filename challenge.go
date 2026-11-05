@@ -13,11 +13,15 @@ var (
 )
 
 func (c *Client) getChallenge(header []byte, fullResult byte) ([]byte, bool, error) {
+	c.drain()
+
 	if err := c.send(header); err != nil {
 		return nil, false, err
 	}
 
-	data, err := c.receive()
+	data, err := c.receiveMatching(func(data []byte) bool {
+		return isReply(data, true, A2S_PLAYER_CHALLENGE_REPLY_HEADER, fullResult)
+	})
 
 	if err != nil {
 		return nil, false, err
