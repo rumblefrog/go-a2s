@@ -19,11 +19,15 @@ var (
 )
 
 func (c *Client) getChallenge(header []byte, fullResult byte) ([]byte, bool, error) {
+	c.drain()
+
 	if err := c.send(header); err != nil {
 		return nil, false, err
 	}
 
-	data, err := c.receive()
+	data, err := c.receiveMatching(func(data []byte) bool {
+		return isReply(data, true, A2S_PLAYER_CHALLENGE_REPLY_HEADER, fullResult)
+	})
 
 	if err != nil {
 		return nil, false, err
@@ -73,14 +77,17 @@ func challengeOf(data []byte) ([]byte, bool) {
 
 // requestWithChallenge sends the request that request builds for challenge and returns the
 // reply. When the server answers with a new challenge instead of the result, the request is
-// sent again with that challenge, up to MaxChallengeRetries times.
-func (c *Client) requestWithChallenge(request func(challenge []byte) []byte, challenge []byte) ([]byte, error) {
+// sent again with that challenge, up to MaxChallengeRetries times. Replies other than a
+// challenge, a fullResult reply or a split packet are discarded as stale.
+func (c *Client) requestWithChallenge(request func(challenge []byte) []byte, challenge []byte, fullResult byte) ([]byte, error) {
 	for retries := 0; ; retries++ {
 		if err := c.send(request(challenge)); err != nil {
 			return nil, err
 		}
 
-		data, err := c.receive()
+		data, err := c.receiveMatching(func(data []byte) bool {
+			return isReply(data, true, A2S_PLAYER_CHALLENGE_REPLY_HEADER, fullResult)
+		})
 
 		if err != nil {
 			return nil, err

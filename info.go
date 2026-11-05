@@ -122,7 +122,7 @@ func (c *Client) QueryInfo() (*ServerInfo, error) {
 
 		data, err = c.requestWithChallenge(func(challenge []byte) []byte {
 			return append(append([]byte{}, query...), challenge...)
-		}, data)
+		}, data, A2S_INFO_RESPONSE)
 
 		if err != nil {
 			return nil, err

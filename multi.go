@@ -90,26 +90,42 @@ func (c *Client) collectMultiplePacketResponse(data []byte) ([]byte, error) {
 	received := 0
 	fullSize := 0
 
+	// a new ID means the response being collected is stale
+	id := header.ID
+	abandoned := map[uint32]bool{}
+
 	for {
-		if int(header.Number) >= len(packets) {
-			return nil, ErrPacketOutOfBound
+		if !abandoned[header.ID] {
+			if header.ID != id {
+				abandoned[id] = true
+				id = header.ID
+				packets = make([]*MultiPacketHeader, header.Total)
+				received = 0
+				fullSize = 0
+			}
+
+			if int(header.Number) >= len(packets) {
+				return nil, ErrPacketOutOfBound
+			}
+
+			if packets[header.Number] != nil {
+				return nil, ErrDuplicatePacket
+			}
+
+			packets[header.Number] = header
+
+			fullSize += len(header.Payload)
+
+			received++
+
+			if received == len(packets) {
+				break
+			}
 		}
 
-		if packets[header.Number] != nil {
-			return nil, ErrDuplicatePacket
-		}
-
-		packets[header.Number] = header
-
-		fullSize += len(header.Payload)
-
-		received++
-
-		if received == len(packets) {
-			break
-		}
-
-		data, err := c.receive()
+		data, err := c.receiveMatching(func(data []byte) bool {
+			return isReply(data, true)
+		})
 
 		if err != nil {
 			return nil, err

@@ -1,6 +1,7 @@
 package a2s
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"net"
@@ -12,6 +13,8 @@ const (
 	DefaultTimeout       = time.Second * 3
 	DefaultPort          = 27015
 	DefaultMaxPacketSize = 1400
+
+	drainWindow = time.Millisecond
 )
 
 var (
@@ -120,24 +123,73 @@ func (c *Client) send(data []byte) error {
 	return err
 }
 
-func (c *Client) receive() ([]byte, error) {
+// receiveMatching discards datagrams until one is accepted
+func (c *Client) receiveMatching(accept func([]byte) bool) ([]byte, error) {
 	defer c.setNextQueryTime()
 
 	if c.timeout > 0 {
 		c.conn.SetReadDeadline(c.extendedDeadline())
 	}
 
-	size, err := c.conn.Read(c.buffer[0:c.maxPacketSize])
+	for {
+		size, err := c.conn.Read(c.buffer[0:c.maxPacketSize])
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+
+		if !accept(c.buffer[:size]) {
+			continue
+		}
+
+		buffer := make([]byte, size)
+
+		copy(buffer, c.buffer[:size])
+
+		return buffer, nil
+	}
+}
+
+// drain discards late replies to earlier queries still queued on the socket
+func (c *Client) drain() {
+	if c.conn == nil {
+		return
 	}
 
-	buffer := make([]byte, size)
+	defer c.conn.SetReadDeadline(time.Time{})
 
-	copy(buffer, c.buffer[:size])
+	for {
+		// a deadline in the past fails without reading
+		c.conn.SetReadDeadline(time.Now().Add(drainWindow))
 
-	return buffer, nil
+		if _, err := c.conn.Read(c.buffer[0:c.maxPacketSize]); err != nil {
+			return
+		}
+	}
+}
+
+// isReply reports whether data is a split packet (if allowed) or one of types
+func isReply(data []byte, allowSplit bool, types ...byte) bool {
+	if len(data) < 4 {
+		return false
+	}
+
+	switch int32(binary.LittleEndian.Uint32(data)) {
+	case MULTI_PACKET_RESPONSE_HEADER:
+		return allowSplit
+	case -1:
+		if len(data) < 5 {
+			return false
+		}
+
+		for _, t := range types {
+			if data[4] == t {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (c *Client) Close() error {

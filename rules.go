@@ -57,7 +57,7 @@ func (c *Client) QueryRules() (*RulesInfo, error) {
 				A2S_RULES_REQUEST,
 				challenge[0], challenge[1], challenge[2], challenge[3],
 			}
-		}, data)
+		}, data, A2S_RULES_RESPONSE)
 
 		if err != nil {
 			return nil, err
